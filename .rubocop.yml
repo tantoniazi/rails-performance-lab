@@ -1,0 +1,26 @@
+# Rails Performance Lab - RuboCop config
+# Run: bundle exec rubocop
+
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.3
+  Exclude:
+    - "db/schema.rb"
+    - "db/seeds.rb"
+    - "bin/*"
+    - "vendor/**/*"
+
+Style/Documentation:
+  Enabled: false
+
+Metrics/MethodLength:
+  Max: 25
+
+Metrics/BlockLength:
+  Exclude:
+    - "examples/**/*.rb"
+    - "benchmarks/**/*.rb"
+    - "db/seeds.rb"
+
+Layout/LineLength:
+  Max: 120

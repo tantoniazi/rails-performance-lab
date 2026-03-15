@@ -1,0 +1,57 @@
+# Rails Performance Lab - Docker Compose
+# Run: docker-compose -f docker/docker-compose.yml up -d
+# Then: docker-compose -f docker/docker-compose.yml exec app bin/rails db:create db:migrate db:seed
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: rails_performance_lab_development
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_preload_libraries=pg_stat_statements"
+      - "-c"
+      - "pg_stat_statements.track=all"
+      # Performance tuning for the lab (adjust for your machine)
+      - "-c"
+      - "shared_buffers=256MB"
+      - "-c"
+      - "work_mem=16MB"
+      - "-c"
+      - "maintenance_work_mem=128MB"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_PORT: 5432
+      RAILS_ENV: development
+    volumes:
+      - ..:/app
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    tty: true
+    command: bin/rails server -b 0.0.0.0
+
+volumes:
+  postgres_data: {}
